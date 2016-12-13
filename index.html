@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Field Selection Download Test</title>
+    <script type="text/javascript" src="http://public.tableau.com/javascripts/api/tableau-2.js"></script>
+    <script type="text/javascript">
+        var viz, sheet, table;
+
+        function initViz() {
+            var containerDiv = document.getElementById("vizContainer"),
+                url = "https://10az.online.tableau.com/t/seguetechnologies/views/WSS_LRDP_Field_Selection_Test/Sheet1",
+                options = {
+                    hideTabs: true,
+                    hideToolbar: true,
+                    onFirstInteractive: function() {
+                        document.getElementById('getFields').disabled = false; // Enable our button
+                    }
+                };
+            viz = new tableau.Viz(containerDiv, url, options);
+        }
+
+        function getTextValue(record) {
+            return "\"" + record.formattedValue + "\"";
+        }
+
+        function getColumnName(columnData) {
+            // console.log(columnData);
+            return columnData.getFieldName();
+        }
+
+        function isCheckbox(element) {
+            return (element.type && element.type === 'checkbox')
+        }
+
+        function getFields() {
+            sheet = viz.getWorkbook().getActiveSheet();
+            // If the active sheet is not a dashboard, then you can just enter:
+            // viz.getWorkbook().getActiveSheet();
+            options = {
+                maxRows: 1, // Max rows to return. Use 0 to return all rows
+                ignoreAliases: false,
+                ignoreSelection: true,
+                includeAllColumns: true
+            };
+
+            sheet.getUnderlyingDataAsync(options).then(function(t) {
+                table = t;
+                var columns = table.getColumns();
+
+                var checkboxContainer = document.getElementById('checkboxes');
+                checkboxContainer.innerHTML = "";
+
+                columns.forEach(function (columnData, index) {
+                    var checkbox = document.createElement('input');
+                    checkbox.type = "checkbox";
+                    checkbox.name = columnData.getFieldName();
+                    checkbox.value = columnData.getIndex();
+                    checkbox.id = "field_" + columnData.getIndex();
+
+                    var label = document.createElement('label');
+                    label.htmlFor = checkbox.id;
+                    label.appendChild(document.createTextNode(columnData.getFieldName()));
+
+                    checkboxContainer.appendChild(checkbox);
+                    checkboxContainer.appendChild(label);
+                });
+
+                document.getElementById('getData').disabled = false; // Enable our button
+
+            });
+        }
+
+        function getUnderlyingDataZ() {
+            var checkboxContainer = document.getElementById('checkboxes');
+            var childNodes = checkboxContainer.childNodes;
+            var checkboxes = [];
+            for (var i = 0; i < childNodes.length; i++) {
+                if (isCheckbox(childNodes[i])) {
+                    checkboxes.push(childNodes[i]);
+                }
+            }
+            var checkedIndexes = [];
+            checkboxes.forEach( function(checkbox, index) {
+                if (checkbox.checked) {
+                    checkedIndexes.push(checkbox.value);
+                }
+            });
+            console.log(checkedIndexes);
+        }
+
+        function getUnderlyingData() {
+            var checkboxContainer = document.getElementById('checkboxes');
+            var childNodes = checkboxContainer.childNodes;
+            var checkboxes = [];
+            for (var i = 0; i < childNodes.length; i++) {
+                if (isCheckbox(childNodes[i])) {
+                    checkboxes.push(childNodes[i]);
+                }
+            }
+            var checkedIndexes = [];
+            checkboxes.forEach( function(checkbox, index) {
+                if (checkbox.checked) {
+                    checkedIndexes.push(parseInt(checkbox.value));
+                }
+            });
+            console.log(checkedIndexes);
+
+            sheet = viz.getWorkbook().getActiveSheet();
+            // If the active sheet is not a dashboard, then you can just enter:
+            // viz.getWorkbook().getActiveSheet();
+            options = {
+                maxRows: 0, // Max rows to return. Use 0 to return all rows
+                ignoreAliases: false,
+                ignoreSelection: true,
+                includeAllColumns: true
+            };
+
+            sheet.getUnderlyingDataAsync(options).then(function(t) {
+                table = t;
+                var tgt = document.getElementById("dataTarget");
+                // tgt.innerHTML = "<h4>Underlying Data:</h4><p>" + JSON.stringify(table.getData()) + "</p>";
+
+                var columns = table.getColumns();
+
+                // console.log(columns);
+
+                var columnLine = columns.filter(function(columnData) {
+                    return (checkedIndexes.indexOf(columnData.getIndex()) >= 0);
+                }).map(getColumnName).join(",");
+                var lineArray = [];
+                lineArray.push("data:text/csv;charset=utf-8," + columnLine);
+                // columns.forEach(function (infoArray, index) {
+                //     var mappedArray = infoArray.map(getColumnName);
+
+                //     var line = infoArray.map(getColumnName).join(",");
+                //     lineArray.push(index == 0 ? "data:text/csv;charset=utf-8," + line : line);
+                // });
+                // var csvContent = lineArray.join("\n");
+
+                // console.log(lineArray);
+
+                var data = table.getData();
+
+                // console.log(data);
+
+                // var csvContent = "data:text/csv;charset=utf-8,";
+                // data.forEach(function(infoArray, index){
+
+                //    dataString = infoArray.map(getTextValue).join(",");
+                //    csvContent += dataString + "\n";
+
+                // }); 
+
+                // var lineArray = [];
+                data.forEach(function (infoArray, index) {
+                    var selectedFieldValues = [];
+
+                    checkedIndexes.forEach(function(indexValue, index) {
+                        selectedFieldValues.push(getTextValue(infoArray[parseInt(indexValue)]));
+                    });
+
+                    var line = selectedFieldValues.join(",");
+                    lineArray.push(line);
+                });
+                var csvContent = lineArray.join("\n");
+
+
+                // console.log(csvContent);
+
+                var encodedUri = encodeURI(csvContent);
+                window.open(encodedUri);
+
+            });
+        }
+    </script>
+</head>
+
+<body onload="initViz();">
+    <div class="page-header">
+        <h1>getData() Basic Example</h1>
+        <p>Click the "Get Data" button to get underlying data for the viz.</p>
+        <button id="getFields" onclick="getFields()" class="btn" disabled>Get Fields</button>
+        <button id="getData" onclick="getUnderlyingData()" class="btn" disabled>Get Data</button>
+    </div>
+    <div id="vizContainer" style="width:200px; height:300px;"></div>
+    <div id="dataTarget"></div>
+    <div id="checkboxes"></div>
+
+<!--     <script type='text/javascript' src='https://10az.online.tableau.com/javascripts/api/viz_v1.js'></script>
+    <div class='tableauPlaceholder' style='width: 600px; height: 600px;'>
+        <object class='tableauViz' width='2099' height='1248' style='display:none;'><param name='host_url' value='https%3A%2F%2F10az.online.tableau.com%2F' /> 
+            <param name='site_root' value='&#47;t&#47;seguetechnologies' />
+            <param name='name' value='WSS_LRDP_Field_Selection_Test&#47;Sheet1' />
+            <param name='tabs' value='no' /><param name='toolbar' value='yes' />
+            <param name='showShareOptions' value='true' />
+        </object>
+    </div> -->
+</body>
+
+</html>
