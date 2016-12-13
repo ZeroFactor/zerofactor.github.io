@@ -33,6 +33,23 @@
             return (element.type && element.type === 'checkbox')
         }
 
+        function updateAllCheckboxes(checkedValue) {
+            var checkboxContainer = document.getElementById('checkboxes');
+            var childNodes = checkboxContainer.childNodes;
+            for (var i = 0; i < childNodes.length; i++) {
+                if (isCheckbox(childNodes[i])) {
+                    childNodes[i].checked = checkedValue;
+                }
+            }
+        }
+        function checkAll() {
+            updateAllCheckboxes(true);
+        }
+
+        function uncheckAll() {
+            updateAllCheckboxes(false);
+        }
+
         function getFields() {
             sheet = viz.getWorkbook().getActiveSheet();
             // If the active sheet is not a dashboard, then you can just enter:
@@ -129,7 +146,8 @@
                     return (checkedIndexes.indexOf(columnData.getIndex()) >= 0);
                 }).map(getColumnName).join(",");
                 var lineArray = [];
-                lineArray.push("data:text/csv;charset=utf-8," + columnLine);
+                // lineArray.push("data:text/csv;charset=utf-8," + columnLine);
+                lineArray.push(columnLine);
                 // columns.forEach(function (infoArray, index) {
                 //     var mappedArray = infoArray.map(getColumnName);
 
@@ -168,8 +186,12 @@
 
                 // console.log(csvContent);
 
-                var encodedUri = encodeURI(csvContent);
-                window.open(encodedUri);
+                var csvData = new Blob([csvContent], { type: 'text/csv' }); //new way
+                var csvUrl = URL.createObjectURL(csvData);
+                window.open(csvUrl);
+
+                // var encodedUri = encodeURI(csvContent);
+                // window.open(encodedUri);
 
             });
         }
@@ -185,6 +207,10 @@
     </div>
     <div id="vizContainer" style="width:200px; height:300px;"></div>
     <div id="dataTarget"></div>
+    <div id="checkboxControls">
+        <button id="checkAll" onclick="checkAll()" class="btn">Check All</button>
+        <button id="uncheckAll" onclick="uncheckAll()" class="btn">Uncheck All</button>
+    </div>
     <div id="checkboxes"></div>
 
 <!--     <script type='text/javascript' src='https://10az.online.tableau.com/javascripts/api/viz_v1.js'></script>
