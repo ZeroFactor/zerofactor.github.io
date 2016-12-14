@@ -81,8 +81,8 @@
                     label.appendChild(document.createTextNode(columnData.getFieldName()));
 
                     checkboxContainer.appendChild(checkbox);
-                    checkboxContainer.appendChild(document.createElement('br'));
                     checkboxContainer.appendChild(label);
+                    checkboxContainer.appendChild(document.createElement('br'));
                 });
 
                 document.getElementById('getData').disabled = false; // Enable our button
@@ -190,7 +190,8 @@
 
                 var csvData = new Blob([csvContent], { type: 'text/csv' }); //new way
                 var csvUrl = URL.createObjectURL(csvData);
-                window.open(csvUrl);
+                window.location.href = csvUrl
+                // window.open(csvUrl);
 
                 // var encodedUri = encodeURI(csvContent);
                 // window.open(encodedUri);
@@ -203,16 +204,17 @@
 <body onload="initViz();">
     <div class="page-header">
         <h1>Dynamic Field Selection Report</h1>
-        <p>Click the "Get Data" button to download the selected data.</p>
+        <p>Click the "Get Data" button to download the data for the selected fields.</p>
         <!-- <button id="getFields" onclick="getFields()" class="btn" disabled>Get Fields</button> -->
         <button id="getData" onclick="getUnderlyingData()" class="btn" disabled>Get Data</button>
     </div>
-    <div id="vizContainer" style="width:200px; height:300px;"></div>
+    <div id="vizContainer" style="width:600px; height:300px;"></div>
     <div id="dataTarget"></div>
     <div id="checkboxControls">
         <button id="checkAll" onclick="checkAll()" class="btn">Check All</button>
         <button id="uncheckAll" onclick="uncheckAll()" class="btn">Uncheck All</button>
     </div>
+    <br />
     <div id="checkboxes"></div>
 
 <!--     <script type='text/javascript' src='https://10az.online.tableau.com/javascripts/api/viz_v1.js'></script>
