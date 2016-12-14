@@ -14,7 +14,8 @@
                     hideTabs: true,
                     hideToolbar: true,
                     onFirstInteractive: function() {
-                        document.getElementById('getFields').disabled = false; // Enable our button
+                        // document.getElementById('getFields').disabled = false; // Enable our button
+                        getFields();
                     }
                 };
             viz = new tableau.Viz(containerDiv, url, options);
@@ -80,6 +81,7 @@
                     label.appendChild(document.createTextNode(columnData.getFieldName()));
 
                     checkboxContainer.appendChild(checkbox);
+                    checkboxContainer.appendChild(document.createElement('br'));
                     checkboxContainer.appendChild(label);
                 });
 
@@ -200,9 +202,9 @@
 
 <body onload="initViz();">
     <div class="page-header">
-        <h1>getData() Basic Example</h1>
-        <p>Click the "Get Data" button to get underlying data for the viz.</p>
-        <button id="getFields" onclick="getFields()" class="btn" disabled>Get Fields</button>
+        <h1>Dynamic Field Selection Report</h1>
+        <p>Click the "Get Data" button to download the selected data.</p>
+        <!-- <button id="getFields" onclick="getFields()" class="btn" disabled>Get Fields</button> -->
         <button id="getData" onclick="getUnderlyingData()" class="btn" disabled>Get Data</button>
     </div>
     <div id="vizContainer" style="width:200px; height:300px;"></div>
